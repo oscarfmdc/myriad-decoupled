@@ -72,7 +72,7 @@ subprojects {
         mesosVer = "1.8.0:shaded-protobuf"
         //Allows passing -PhadoopVer=2.6.0 from command line
         if(!project.hasProperty('hadoopVer')) {
-            hadoopVer = "2.7.0"
+            hadoopVer = "2.7.7"
         }
         metricsVer = "3.1.0"
     }

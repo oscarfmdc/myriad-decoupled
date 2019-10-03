@@ -5,6 +5,9 @@ import org.apache.mesos.MesosSchedulerDriver;
 import org.apache.mesos.Protos;
 import org.apache.mesos.Protos.FrameworkInfo;
 import org.apache.mesos.Scheduler;
+import org.mortbay.jetty.Server;
+import org.mortbay.jetty.nio.SelectChannelConnector;
+import webapp.MyriadWebServer;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -85,6 +88,24 @@ public class MyriadDriverD {
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(1);
+        }
+
+        SelectChannelConnector ret = new SelectChannelConnector();
+        ret.setName("Myriad");
+        ret.setHost("0.0.0.0");
+        ret.setPort(7777);
+
+        MyriadWebServer webserver = new MyriadWebServer(new Server(), ret);
+        try {
+            webserver.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            Thread.sleep(1000000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
         frameworkFailoverTimeout = Integer.parseInt((String) prop.getOrDefault("framework_failover_timeout", 43200000));

@@ -1,3 +1,7 @@
+plugins {
+    id "com.github.node-gradle.gulp" version "1.3.0"
+}
+
 apply plugin: 'java'
 apply plugin: 'maven'
 
@@ -21,15 +25,15 @@ configurations {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 
-//    compile ("org.apache.hadoop:hadoop-yarn-common:${hadoopVer}")
-//    compile ("org.apache.hadoop:hadoop-yarn-server-resourcemanager:${hadoopVer}")
-//    compile ("org.apache.hadoop:hadoop-yarn-server-nodemanager:${hadoopVer}")
-//    compile ("org.apache.hadoop:hadoop-common:${hadoopVer}")
-//    compile ("org.apache.hadoop:hadoop-client:${hadoopVer}")
-//    compile ("org.apache.hadoop:hadoop-yarn-client:${hadoopVer}")
-//    compile ("org.apache.hadoop:hadoop-yarn-client:${hadoopVer}")
-//    compile group: 'org.apache.hadoop', name: 'hadoop-core', version: '1.2.1'
     extraLibs group: 'org.apache.mesos', name: 'mesos', version: "${mesosVer}"
+    extraLibs group: 'com.google.inject.extensions', name: 'guice-multibindings', version: "3.0"
+    extraLibs group: 'org.apache.hadoop', name: 'hadoop-common', version: "${hadoopVer}"
+
+//    compile ('com.google.inject.extensions:guice-multibindings:3.0')
+
+//    compile ("org.apache.hadoop:hadoop-common:${hadoopVer}") {
+//        exclude group: "com.google.guava"
+//    }
 
     configurations.compile.extendsFrom(configurations.extraLibs)
 }
@@ -38,4 +42,59 @@ jar {
     from {
         configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
     }
+}
+
+clean {
+    dependsOn gulp_clean
+}
+
+processResources {
+    exclude ('*/node_modules/**')
+    dependsOn gulp_build
+}
+
+sourceSets {
+    main {
+        resources {
+            include '*.*'
+            include 'webapp/public/**'
+            exclude 'webapp/node_modules/**'
+            exclude 'webapp/css'
+            exclude 'webapp/img'
+            exclude 'webapp/js'
+            exclude 'webapp/*.*'
+        }
+    }
+}
+
+node {
+    // Version of node to use.
+    version = '12.5.0'
+
+    // Base URL for fetching node distributions (change if you have a mirror).
+    distBaseUrl = 'https://nodejs.org/dist'
+
+    // If true, it will download node using above parameters.
+    // If false, it will try to use globally installed node.
+    download = true
+
+    // Set the work directory where node_modules should be located
+    nodeModulesDir = file("${project.projectDir}")
+}
+
+gulp {
+    // Set the directory where gulpfile.js should be found
+    workDir = file("${project.projectDir}/src/main/resources/webapp")
+
+    // Whether colors should output on the terminal
+    colors = false
+
+    // Whether output from Gulp should be buffered - useful when running tasks in parallel
+    bufferOutput = false
+
+    // makes sure on each build that gulp is installed
+    gulp_build.dependsOn 'installGulp'
+
+    // processes your package.json before running gulp build
+    gulp_build.dependsOn 'npmInstall'
 }

@@ -44,11 +44,6 @@ sh run-framework-myriad.sh fedora-mesos-m0.node.keedio.cloud myriad.properties
 
 ```
 export JAVA_HOME=/usr
-
-./hdfs namenode -format
-./hdfs namenode
-./hdfs datanode
-
 ./yarn jar ../../hadoop-mapreduce-examples-2.7.7.jar pi 16 1000
 ```
 
